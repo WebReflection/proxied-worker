@@ -23,7 +23,7 @@ This module works with latest browsers, as long as the following APIs are availa
 
 ```js
 // client.js
-import ProxiedWorker from 'proxied-worker/client';
+import ProxiedWorker from 'https://cdn.skypack.dev/proxied-worker/client';
 
 // point at the file that exports a namespace
 const nmsp = ProxiedWorker('./worker.js');
@@ -43,7 +43,7 @@ console.log(await instance.sum(1, 2));
 // - - - - - - - - - - - - - - - - - - - - - - 
 
 // worker.js
-importScripts('proxied-worker/server');
+importScripts('https://cdn.skypack.dev/proxied-worker/server');
 
 ProxiedWorker({
   test: 'OK',

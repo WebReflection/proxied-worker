@@ -30,11 +30,11 @@
   "type": "module",
   "exports": {
     "./client": {
-      "import": "./esm/client.js",
+      "import": "./client.js",
       "default": "./cjs/client.js"
     },
     "./server": {
-      "import": "./esm/server.js",
+      "import": "./server.js",
       "default": "./cjs/server.js"
     },
     "./package.json": "./package.json"
