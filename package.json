@@ -3,9 +3,9 @@
   "version": "0.1.4",
   "description": "A tiny utility to asynchronously drive a namespace exposed through a Worker",
   "scripts": {
-    "build": "npm run cjs && npm run rollup:client && npm run rollup:server && npm run size",
-    "cjs": "ascjs --no-default esm cjs",
+    "build": "npm run rollup:client && npm run rollup:server && npm run rollup:module && npm run size",
     "rollup:client": "rollup --config rollup/client.config.js",
+    "rollup:module": "cat server.js | sed 's/globalThis.ProxiedWorker=/export default /' > module.js",
     "rollup:server": "rollup --config rollup/server.config.js && sed -i.bck 's/^var /self./' server.js && rm -rf server.js.bck",
     "coveralls": "c8 report --reporter=text-lcov | coveralls",
     "size": "cat client.js | brotli | wc -c && cat server.js | brotli | wc -c",
@@ -29,14 +29,9 @@
   },
   "type": "module",
   "exports": {
-    "./client": {
-      "import": "./client.js",
-      "default": "./cjs/client.js"
-    },
-    "./server": {
-      "import": "./server.js",
-      "default": "./cjs/server.js"
-    },
+    "./client": "./client.js",
+    "./module": "./module.js",
+    "./server": "./server.js",
     "./package.json": "./package.json"
   },
   "repository": {

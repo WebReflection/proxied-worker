@@ -69,3 +69,17 @@ ProxiedWorker({
   }
 });
 ```
+
+Alternatively, if the browser supports workers as module:
+
+```js
+// client.js
+import ProxiedWorker from 'https://unpkg.com/proxied-worker/client';
+const nmsp = ProxiedWorker('./worker.js', {type: 'module'});
+
+// worker.js
+import ProxiedWorker from 'https://unpkg.com/proxied-worker/module';
+ProxiedWorker({
+  // ...
+});
+```

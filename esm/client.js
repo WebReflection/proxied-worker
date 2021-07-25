@@ -24,15 +24,19 @@ const post = (worker, instance, list, $ = o => o) => new Promise((ok, err) => {
  * @param {string} path the Worker file that exports the namespace.
  * @returns {Proxy}
  */
-export default function ProxiedWorker(path, Worker = globalThis.Worker) {
+export default function ProxiedWorker(
+  path,
+  options = {type: 'classic'},
+  Worker = globalThis.Worker
+) {
 
   const create = (id, list) => new Proxy(Proxied.bind({id, list}), handler);
 
   const registry = new FinalizationRegistry(instance => {
-    worker.postMessage({id: `proxied-worker:${instance}:0`, list: []});
+    worker.postMessage({id: `proxied-worker:${instance}:-0`, list: []});
   });
 
-  const worker = new Worker(path);
+  const worker = new Worker(path, options);
 
   const handler = {
     apply(target, _, args) {
