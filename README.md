@@ -12,6 +12,11 @@ A tiny utility to asynchronously drive a namespace exposed through a Worker:
 Instances reflected on the client are automatically cleared up on the worker though a dedicated *FinalizationRegistry*.
 
 
+### Related
+
+This module is a modern simplification of [workway](https://github.com/WebReflection/workway#readme), heavily inspired, and possibly fueling in the future, [electroff](https://github.com/WebReflection/electroff#readme) too.
+
+
 ## Compatibility / Requirements
 
 This module works with latest browsers, as long as the following APIs are available:
