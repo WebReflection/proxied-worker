@@ -18,6 +18,8 @@ This module works with latest browsers, as long as the following APIs are availa
   * [Proxy](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy)
   * [Worker](https://developer.mozilla.org/en-US/docs/Web/API/Worker/Worker)
 
+**[Live Demo](https://webreflection.github.io/proxied-worker/test/)**
+
 
 ## Example
 
