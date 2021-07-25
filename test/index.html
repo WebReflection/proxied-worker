@@ -10,6 +10,9 @@
       const nmsp = ProxiedWorker('./worker.js');
       console.time('property access');
       console.log(await nmsp.test);
+      document.body.appendChild(
+        document.createElement('p')
+      ).textContent = 'P.S. this module works in this browser too 👍';
       console.timeEnd('property access');
       console.time('repeated property access');
       console.log(await nmsp.test);
