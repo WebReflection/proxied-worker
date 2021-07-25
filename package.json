@@ -1,0 +1,50 @@
+{
+  "name": "proxied-worker",
+  "version": "0.0.0",
+  "description": "A tiny utility to asynchronously drive a namespace exposed through a Worker",
+  "scripts": {
+    "build": "npm run cjs && npm run rollup:client && npm run rollup:server && npm run size",
+    "cjs": "ascjs --no-default esm cjs",
+    "rollup:client": "rollup --config rollup/client.config.js",
+    "rollup:server": "rollup --config rollup/server.config.js && sed -i.bck 's/^var /self./' server.js && rm -rf server.js.bck",
+    "coveralls": "c8 report --reporter=text-lcov | coveralls",
+    "size": "cat client.js | brotli | wc -c && cat server.js | brotli | wc -c",
+    "test": "c8 node test/index.js",
+    "start": "node server.js"
+  },
+  "keywords": [
+    "worker",
+    "namespace",
+    "proxy"
+  ],
+  "author": "Andrea Giammarchi",
+  "license": "ISC",
+  "devDependencies": {
+    "@rollup/plugin-node-resolve": "^13.0.2",
+    "ascjs": "^5.0.1",
+    "c8": "^7.7.3",
+    "coveralls": "^3.1.1",
+    "rollup": "^2.53.3",
+    "rollup-plugin-terser": "^7.0.2"
+  },
+  "type": "module",
+  "exports": {
+    "./client": {
+      "import": "./esm/client.js",
+      "default": "./cjs/client.js"
+    },
+    "./server": {
+      "import": "./esm/server.js",
+      "default": "./cjs/server.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/WebReflection/proxied-worker.git"
+  },
+  "bugs": {
+    "url": "https://github.com/WebReflection/proxied-worker/issues"
+  },
+  "homepage": "https://github.com/WebReflection/proxied-worker#readme"
+}
