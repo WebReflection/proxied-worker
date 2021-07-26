@@ -2,20 +2,20 @@
 
 let uid = 0;
 
-const post = (worker, instance, list, $ = o => o) => new Promise((ok, err) => {
+const post = (port, instance, list, $ = o => o) => new Promise((ok, err) => {
   let id = `proxied-worker:${instance}:${uid++}`;
-  worker.addEventListener('message', function message({
+  port.addEventListener('message', function message({
     data: {id: wid, result, error}
   }) {
     if (wid === id) {
-      worker.removeEventListener('message', message);
+      port.removeEventListener('message', message);
       if (error != null)
         err(new Error(error));
       else
         ok($(result));
     }
   });
-  worker.postMessage({id, list});
+  port.postMessage({id, list});
 });
 
 /**
@@ -33,23 +33,26 @@ export default function ProxiedWorker(
   const create = (id, list) => new Proxy(Proxied.bind({id, list}), handler);
 
   const registry = new FinalizationRegistry(instance => {
-    worker.postMessage({id: `proxied-worker:${instance}:-0`, list: []});
+    port.postMessage({id: `proxied-worker:${instance}:-0`, list: []});
   });
 
   const worker = new Worker(path, options);
+  const port = worker.port || worker;
+  if (port !== worker)
+    port.start();
 
   const handler = {
     apply(target, _, args) {
       const {id, list} = target();
       list[list.length - 1] += '.apply';
       list.push(args);
-      return post(worker, id, list);
+      return post(port, id, list);
     },
     construct(target, args) {
       const {id, list} = target();
       list[list.length - 1] += '.new';
       list.push(args);
-      return post(worker, id, list, result => {
+      return post(port, id, list, result => {
         const proxy = create(result, []);
         registry.register(proxy, result);
         return proxy;
@@ -62,7 +65,7 @@ export default function ProxiedWorker(
           return () => ({id, list});
         case 'then':
           return list.length ?
-            (ok, err) => post(worker, id, list).then(ok, err) :
+            (ok, err) => post(port, id, list).then(ok, err) :
             void 0;
       }
       return create(id, list.concat(key));

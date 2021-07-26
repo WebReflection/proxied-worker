@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>proxied-worker</title>
+  <script type="module">
+  import('../client.js')
+    .then(async ({default: ProxiedWorker}) => {
+      const nmsp = ProxiedWorker('./worker.js', void 0, SharedWorker);
+      console.time('property access');
+      console.log(await nmsp.test);
+      document.body.appendChild(
+        document.createElement('p')
+      ).textContent = 'P.S. this module works in this browser too 👍';
+      console.timeEnd('property access');
+      console.time('repeated property access');
+      console.log(await nmsp.test);
+      console.timeEnd('repeated property access');
+      console.time('function invoke');
+      console.log(await nmsp.sum(1, 2));
+      console.timeEnd('function invoke');
+      await nmsp.delayed();
+      console.time('instance creation');
+      const instance = await new nmsp.Class('🍻');
+      console.timeEnd('instance creation');
+      console.time('instance property access');
+      console.log(await instance.name);
+      console.timeEnd('instance property access');
+      console.time('instance method invoke');
+      console.log(await instance.sum(1, 2));
+      console.timeEnd('instance method invoke');
+      const instances = await Promise.all(
+        Array.from({length: 0xFF}, (i) => new nmsp.Class(i))
+      );
+      instances.splice(0);
+      document.body.onclick = async () => {
+        console.time('lazy instance method invoke');
+        console.log(await instance.sum(3, 4));
+        console.timeEnd('lazy instance method invoke');
+      };
+    });
+  </script>
+</head>
+<body>
+  <p>Read in console.</p>
+  <p>
+    <button>Click me</button>
+  </p>
+</body>
+</html>

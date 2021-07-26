@@ -88,3 +88,21 @@ ProxiedWorker({
   // ...
 });
 ```
+
+## As SharedWorker
+
+The `ProxiedWorker` signature is similar to a `Worker` one, plus an extra third argument that is the constructor to use.
+
+In order to have a `SharedWorker`, this code might be used:
+
+```js
+// client.js
+import ProxiedWorker from 'https://unpkg.com/proxied-worker/client';
+const nmsp = ProxiedWorker('./worker.js', {type: 'module'}, SharedWorker);
+
+// worker.js
+import ProxiedWorker from 'https://unpkg.com/proxied-worker/module';
+ProxiedWorker({
+  // ...
+});
+```

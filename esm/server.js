@@ -26,7 +26,16 @@ globalThis.ProxiedWorker = function ProxiedWorker(Namespace) {
     return $;
   };
 
-  addEventListener('message', async ({data: {id, list}}) => {
+  addEventListener('connect', ({ports = []}) => {
+    for (const port of ports) {
+      port.addEventListener('message', message.bind(port));
+      port.start();
+    }
+  });
+
+  addEventListener('message', message.bind(self));
+
+  async function message({data: {id, list}}) {
     if (!/^proxied-worker:([^:]*?):-?\d+$/.test(id))
       return;
 
@@ -54,6 +63,6 @@ globalThis.ProxiedWorker = function ProxiedWorker(Namespace) {
         error = message;
       }
     }
-    postMessage({id, result, error});
-  });
+    this.postMessage({id, result, error});
+  }
 };
