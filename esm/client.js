@@ -33,30 +33,42 @@ export default function ProxiedWorker(
   const create = (id, list) => new Proxy(Proxied.bind({id, list}), handler);
 
   const registry = new FinalizationRegistry(instance => {
-    port.postMessage({id: `proxied-worker:${instance}:-0`, list: []});
+    bus.then(port => port.postMessage({
+      id: `proxied-worker:${instance}:-0`,
+      list: []
+    }));
   });
 
-  const worker = new Worker(path, options);
-  const port = worker.port || worker;
-  if (port !== worker)
-    port.start();
+  const bus = new Promise($ => {
+    if (Worker === globalThis.SharedWorker) {
+      const {port} = new Worker(path, options);
+      port.start();
+      $(port);
+    }
+    else if (Worker === globalThis.ServiceWorker)
+      navigator.serviceWorker.register(path, options).then(
+        ({installing, waiting, active}) => $(installing || waiting || active)
+      );
+    else
+      $(new Worker(path, options));
+  });
 
   const handler = {
     apply(target, _, args) {
       const {id, list} = target();
       list[list.length - 1] += '.apply';
       list.push(args);
-      return post(port, id, list);
+      return bus.then(port => post(port, id, list));
     },
     construct(target, args) {
       const {id, list} = target();
       list[list.length - 1] += '.new';
       list.push(args);
-      return post(port, id, list, result => {
+      return bus.then(port => post(port, id, list, result => {
         const proxy = create(result, []);
         registry.register(proxy, result);
         return proxy;
-      });
+      }));
     },
     get(target, key) {
       const {id, list} = target();
@@ -65,7 +77,7 @@ export default function ProxiedWorker(
           return () => ({id, list});
         case 'then':
           return list.length ?
-            (ok, err) => post(port, id, list).then(ok, err) :
+            (ok, err) => bus.then(port => post(port, id, list).then(ok, err)) :
             void 0;
       }
       return create(id, list.concat(key));
