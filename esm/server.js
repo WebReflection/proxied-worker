@@ -35,7 +35,8 @@ globalThis.ProxiedWorker = function ProxiedWorker(Namespace) {
     return $;
   }
 
-  async function message({data: {id, list}}) {
+  async function message(event) {
+    const {source, data: {id, list}} = event;
     if (!/^proxied-worker:([^:]*?):-?\d+$/.test(id))
       return;
 
@@ -67,6 +68,6 @@ globalThis.ProxiedWorker = function ProxiedWorker(Namespace) {
         error = message;
       }
     }
-    this.postMessage({id, result, error});
+    (source || this).postMessage({id, result, error});
   }
 };

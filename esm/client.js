@@ -1,14 +1,17 @@
 /*! (c) Andrea Giammarchi - ISC */
 
+const {navigator, ServiceWorker, SharedWorker, Worker} = globalThis;
+
 let uid = 0;
 
 const post = (port, instance, list, $ = o => o) => new Promise((ok, err) => {
   let id = `proxied-worker:${instance}:${uid++}`;
-  port.addEventListener('message', function message({
+  const rec = port instanceof ServiceWorker ? navigator.serviceWorker : port;
+  rec.addEventListener('message', function message({
     data: {id: wid, result, error}
   }) {
     if (wid === id) {
-      port.removeEventListener('message', message);
+      rec.removeEventListener('message', message);
       if (error != null)
         err(new Error(error));
       else
@@ -27,7 +30,7 @@ const post = (port, instance, list, $ = o => o) => new Promise((ok, err) => {
 export default function ProxiedWorker(
   path,
   options = {type: 'classic'},
-  Worker = globalThis.Worker
+  Kind = Worker
 ) {
 
   const create = (id, list) => new Proxy(Proxied.bind({id, list}), handler);
@@ -40,17 +43,17 @@ export default function ProxiedWorker(
   });
 
   const bus = new Promise($ => {
-    if (Worker === globalThis.SharedWorker) {
-      const {port} = new Worker(path, options);
+    if (Kind === SharedWorker) {
+      const {port} = new Kind(path, options);
       port.start();
       $(port);
     }
-    else if (Worker === globalThis.ServiceWorker)
+    else if (Kind === ServiceWorker)
       navigator.serviceWorker.register(path, options).then(
         ({installing, waiting, active}) => $(installing || waiting || active)
       );
     else
-      $(new Worker(path, options));
+      $(new Kind(path, options));
   });
 
   const handler = {
