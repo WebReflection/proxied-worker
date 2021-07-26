@@ -1,6 +1,6 @@
 {
   "name": "proxied-worker",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "A tiny utility to asynchronously drive a namespace exposed through a Worker",
   "scripts": {
     "build": "npm run rollup:client && npm run rollup:server && npm run rollup:module && npm run size",
