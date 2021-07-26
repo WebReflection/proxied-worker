@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
   <title>proxied-worker</title>
   <script type="module">
-  import('../client.js')
+  import('../esm/client.js')
     .then(async ({default: ProxiedWorker}) => {
       const nmsp = ProxiedWorker('./worker.js', void 0, SharedWorker);
       console.time('property access');

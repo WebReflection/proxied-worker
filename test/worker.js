@@ -1,4 +1,4 @@
-importScripts('../server.js');
+importScripts('../esm/server.js');
 
 ProxiedWorker({
   test: 'OK',
