@@ -119,7 +119,8 @@ import ProxiedWorker from 'https://unpkg.com/proxied-worker/client';
 const nmsp = ProxiedWorker('./service-worker.js', {scope: '/'}, ServiceWorker);
 
 // service-worker.js
-import ProxiedWorker from 'https://unpkg.com/proxied-worker/module';
+importScripts('https://unpkg.com/proxied-worker/server');
+
 ProxiedWorker({
   // ...
 });
