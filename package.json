@@ -1,7 +1,7 @@
 {
   "name": "proxied-worker",
   "version": "0.3.4",
-  "description": "A tiny utility to asynchronously drive a namespace exposed through a Worker",
+  "description": "A tiny utility to asynchronously drive a namespace exposed through a Shared/Service/Worker",
   "scripts": {
     "build": "npm run rollup:client && npm run rollup:server && npm run rollup:module && npm run size",
     "rollup:client": "rollup --config rollup/client.config.js",
@@ -13,6 +13,8 @@
     "start": "node server.js"
   },
   "keywords": [
+    "service",
+    "shared",
     "worker",
     "namespace",
     "proxy"
