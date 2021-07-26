@@ -19,7 +19,7 @@ globalThis.ProxiedWorker = function ProxiedWorker(Namespace) {
     }
   });
 
-  addEventListener('message', message.bind(self));
+  addEventListener('message', message.bind(globalThis));
 
   async function loopThrough($, list) {
     for (let i = 0, {length} = list; i < length; i++) {
