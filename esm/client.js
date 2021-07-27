@@ -8,12 +8,12 @@ const worker = $ => $ instanceof ServiceWorker ? navigator.serviceWorker : $;
 
 const post = (port, instance, list, $ = o => o) => new Promise((ok, err) => {
   let id = `proxied-worker:${instance}:${uid++}`;
-  const rec = worker(port);
-  rec.addEventListener('message', function message({
+  const target = worker(port);
+  target.addEventListener('message', function message({
     data: {id: wid, result, error}
   }) {
     if (wid === id) {
-      rec.removeEventListener('message', message);
+      target.removeEventListener('message', message);
       if (error != null)
         err(new Error(error));
       else
