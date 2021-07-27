@@ -39,6 +39,12 @@
         console.log(await instance.sum(3, 4));
         console.timeEnd('lazy instance method invoke');
       };
+      // notifications
+      await nmsp.addEventListener('message', ({data: {id, args}}) => {
+        if (id === 'notify')
+          console.log(args);
+      });
+      await nmsp.notify();
     });
   </script>
 </head>

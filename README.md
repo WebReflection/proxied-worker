@@ -27,6 +27,12 @@ This module works with latest browsers, as long as the following APIs are availa
 
 **[Live Demo](https://webreflection.github.io/proxied-worker/test/)**
 
+## API
+
+The exported namespace provides a mechanism to await any part of it, including a top level `addEventListener` and `removeEventListener`, to allow listening to custom `postMessage` notifications from the Service/Shared/Worker.
+
+See [worker.js](./test/worker.js) to better understand how this works.
+
 
 ## Example
 
@@ -36,6 +42,12 @@ import ProxiedWorker from 'https://unpkg.com/proxied-worker/client';
 
 // point at the file that exports a namespace
 const nmsp = ProxiedWorker('./worker.js');
+
+// custom notifications from the Worker
+nmsp.addEventListener('message', ({data: {action}}) => {
+  if (action === 'greetings')
+    console.log('Worker said hello 👋');
+});
 
 // access its properties
 console.log(await nmsp.test);
@@ -61,6 +73,7 @@ ProxiedWorker({
   },
   async delayed() {
     console.log('context', this.test);
+    postMessage({action: 'greetings'});
     return await new Promise($ => setTimeout($, 500, Math.random()));
   },
   Class: class {

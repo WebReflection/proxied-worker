@@ -1,9 +1,45 @@
-importScripts('../esm/server.js');
+importScripts('../esm/server.js')
+
+const isServiceWorker = 'clients' in self;
+const clients = [];
+
+// Example: ServiceWorker interaction
+if (isServiceWorker)
+  addEventListener('activate', event => {
+    event.waitUntil(clients.claim());
+  });
+// SharedWorker fallback
+else
+  addEventListener('connect', ({source}) => {
+    clients.push(source);
+  });
 
 ProxiedWorker({
   test: 'OK',
   sum(a, b) {
     return a + b;
+  },
+  notify() {
+    setTimeout(
+      async () => {
+        console.log('notifying');
+        const data = {id: 'notify', args: [1, 2, 3]};
+        // ServiceWorker claimed clients
+        if (isServiceWorker) {
+          for (const client of await self.clients.matchAll({type: 'all'}))
+            client.postMessage(data);
+        }
+        // SharedWorker claimed clients
+        else if (clients.length) {
+          for (const client of clients)
+            client.postMessage(data);
+        }
+        // Worker fallback
+        else
+          postMessage(data);
+      },
+      1000
+    );
   },
   async delayed() {
     console.log('context', this.test);

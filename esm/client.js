@@ -4,9 +4,11 @@ const {navigator, ServiceWorker, SharedWorker, Worker} = globalThis;
 
 let uid = 0;
 
+const worker = $ => $ instanceof ServiceWorker ? navigator.serviceWorker : $;
+
 const post = (port, instance, list, $ = o => o) => new Promise((ok, err) => {
   let id = `proxied-worker:${instance}:${uid++}`;
-  const rec = port instanceof ServiceWorker ? navigator.serviceWorker : port;
+  const rec = worker(port);
   rec.addEventListener('message', function message({
     data: {id: wid, result, error}
   }) {
@@ -75,13 +77,18 @@ export default function ProxiedWorker(
     },
     get(target, key) {
       const {id, list} = target();
+      const {length} = list;
       switch (key) {
-        case 'toJSON':
-          return () => ({id, list});
         case 'then':
-          return list.length ?
+          return length ?
             (ok, err) => bus.then(port => post(port, id, list).then(ok, err)) :
             void 0;
+        case 'addEventListener':
+        case 'removeEventListener':
+          if (!length && !id)
+            return (...args) => bus.then(port => {
+              worker(port)[key](...args);
+            });
       }
       return create(id, list.concat(key));
     }
