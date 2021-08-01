@@ -19,6 +19,9 @@ ProxiedWorker({
   sum(a, b) {
     return a + b;
   },
+  on(type, cb) {
+    setTimeout(cb, 500, type);
+  },
   notify() {
     setTimeout(
       async () => {

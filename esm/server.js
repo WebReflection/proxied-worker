@@ -3,6 +3,20 @@
 const APPLY = '.apply';
 const NEW = '.new';
 
+function args(id) {
+  if (typeof id === 'string') {
+    if (/^proxied-worker:cb:\d+$/.test(id)) {
+      if (!cbs.has(id))
+        cbs.set(id, (...args) => { this.postMessage({id, args}); });
+      return cbs.get(id);
+    }
+    return id.slice(1);
+  }
+  return id;
+};
+
+const cbs = new Map;
+
 let uid = 0;
 
 /**
@@ -21,14 +35,18 @@ globalThis.ProxiedWorker = function ProxiedWorker(Namespace) {
 
   addEventListener('message', message.bind(globalThis));
 
-  async function loopThrough($, list) {
+  async function loopThrough(_, $, list) {
     for (let i = 0, {length} = list; i < length; i++) {
       if (list[i].endsWith(NEW)) {
-        const instance = new $[list[i].slice(0, -NEW.length)](...list[++i]);
+        const instance = new $[list[i].slice(0, -NEW.length)](
+          ...list[++i].map(args, _)
+        );
         instances.get(this).set($ = String(uid++), instance);
       }
       else if (list[i].endsWith(APPLY))
-        $ = await $[list[i].slice(0, -APPLY.length)](...list[++i]);
+        $ = await $[list[i].slice(0, -APPLY.length)](
+          ...list[++i].map(args, _)
+        );
       else
         $ = await $[list[i]];
     }
@@ -40,16 +58,18 @@ globalThis.ProxiedWorker = function ProxiedWorker(Namespace) {
     if (!/^proxied-worker:([^:]*?):-?\d+$/.test(id))
       return;
 
+    const instance = RegExp.$1;
+    const bus = source || this;
+
     if (!instances.has(this))
       instances.set(this, new Map);
 
-    const instance = RegExp.$1;
     let result, error;
     if (instance.length) {
       const ref = instances.get(this);
       if (list.length) {
         try {
-          result = await loopThrough.call(this, ref.get(instance), list);
+          result = await loopThrough.call(this, bus, ref.get(instance), list);
         }
         catch ({message}) {
           error = message;
@@ -62,12 +82,13 @@ globalThis.ProxiedWorker = function ProxiedWorker(Namespace) {
     }
     else {
       try {
-        result = await loopThrough.call(this, Namespace, list);
+        result = await loopThrough.call(this, bus, Namespace, list);
       }
       catch ({message}) {
         error = message;
       }
     }
-    (source || this).postMessage({id, result, error});
+
+    bus.postMessage({id, result, error});
   }
 };

@@ -1,12 +1,23 @@
 /*! (c) Andrea Giammarchi - ISC */
 
 const {navigator, ServiceWorker, SharedWorker, Worker} = globalThis;
+const {isArray} = Array;
 
-let uid = 0;
+const cbs = [o => o];
+
+const callbacks = ({data: {id, args}}) => {
+  if (isArray(args) && /^proxied-worker:cb:(\d+)$/.test(id))
+    cbs[RegExp.$1](...args);
+};
 
 const worker = $ => $ instanceof ServiceWorker ? navigator.serviceWorker : $;
 
-const post = (port, instance, list, $ = o => o) => new Promise((ok, err) => {
+let uid = 0;
+const post = (
+  port, instance, list,
+  args = null,
+  $ = cbs[0]
+) => new Promise((ok, err) => {
   let id = `proxied-worker:${instance}:${uid++}`;
   const target = worker(port);
   target.addEventListener('message', function message({
@@ -20,6 +31,23 @@ const post = (port, instance, list, $ = o => o) => new Promise((ok, err) => {
         ok($(result));
     }
   });
+  if (isArray(args)) {
+    list.push(args);
+    for (let i = 0, {length} = args; i < length; i++) {
+      switch (typeof args[i]) {
+        case 'string':
+          args[i] = '$' + args[i];
+          break;
+        case 'function':
+          target.addEventListener('message', callbacks);
+          let index = cbs.indexOf(args[i]);
+          if (index < 0)
+            index = cbs.push(args[i]) - 1;
+          args[i] = `proxied-worker:cb:${index}`;
+          break;
+      }
+    }
+  }
   port.postMessage({id, list});
 });
 
@@ -62,14 +90,12 @@ export default function ProxiedWorker(
     apply(target, _, args) {
       const {id, list} = target();
       list[list.length - 1] += '.apply';
-      list.push(args);
-      return bus.then(port => post(port, id, list));
+      return bus.then(port => post(port, id, list, args));
     },
     construct(target, args) {
       const {id, list} = target();
       list[list.length - 1] += '.new';
-      list.push(args);
-      return bus.then(port => post(port, id, list, result => {
+      return bus.then(port => post(port, id, list, args, result => {
         const proxy = create(result, []);
         registry.register(proxy, result);
         return proxy;
