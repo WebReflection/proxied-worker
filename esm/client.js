@@ -3,11 +3,15 @@
 const {navigator, ServiceWorker, SharedWorker, Worker} = globalThis;
 const {isArray} = Array;
 
-const cbs = [o => o];
+const ids = [];
+const cbs = [];
 
 const callbacks = ({data: {id, args}}) => {
-  if (isArray(args) && /^proxied-worker:cb:(\d+)$/.test(id))
-    cbs[RegExp.$1](...args);
+  if (isArray(args)) {
+    const i = ids.indexOf(id);
+    if (-1 < i)
+      cbs[i](...args);
+  }
 };
 
 const worker = $ => $ instanceof ServiceWorker ? navigator.serviceWorker : $;
@@ -16,7 +20,7 @@ let uid = 0;
 const post = (
   port, instance, list,
   args = null,
-  $ = cbs[0]
+  $ = o => o
 ) => new Promise((ok, err) => {
   let id = `proxied-worker:${instance}:${uid++}`;
   const target = worker(port);
@@ -41,9 +45,11 @@ const post = (
         case 'function':
           target.addEventListener('message', callbacks);
           let index = cbs.indexOf(args[i]);
-          if (index < 0)
+          if (index < 0) {
             index = cbs.push(args[i]) - 1;
-          args[i] = `proxied-worker:cb:${index}`;
+            ids[index] = `proxied-worker:cb:${uid++ + Math.random()}`;
+          }
+          args[i] = ids[index];
           break;
       }
     }

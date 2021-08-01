@@ -3,20 +3,6 @@
 const APPLY = '.apply';
 const NEW = '.new';
 
-function args(id) {
-  if (typeof id === 'string') {
-    if (/^proxied-worker:cb:\d+$/.test(id)) {
-      if (!cbs.has(id))
-        cbs.set(id, (...args) => { this.postMessage({id, args}); });
-      return cbs.get(id);
-    }
-    return id.slice(1);
-  }
-  return id;
-};
-
-const cbs = new Map;
-
 let uid = 0;
 
 /**
@@ -92,3 +78,16 @@ globalThis.ProxiedWorker = function ProxiedWorker(Namespace) {
     bus.postMessage({id, result, error});
   }
 };
+
+const cbs = new Map;
+function args(id) {
+  if (typeof id === 'string') {
+    if (/^proxied-worker:cb:/.test(id)) {
+      if (!cbs.has(id))
+        cbs.set(id, (...args) => { this.postMessage({id, args}); });
+      return cbs.get(id);
+    }
+    return id.slice(1);
+  }
+  return id;
+}
