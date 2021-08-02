@@ -92,10 +92,22 @@ export default function ProxiedWorker(
       $(new Kind(path, options));
   });
 
+  const cbs = new WeakMap;
+
   const handler = {
     apply(target, _, args) {
       const {id, list} = target();
       list[list.length - 1] += '.apply';
+      for (let i = 0, {length} = args; i < length; i++) {
+        if (typeof args[i] === 'function') {
+          if (!cbs.has(target))
+            cbs.set(target, new Map);
+          const bound = cbs.get(target);
+          if (!bound.has(args[i]))
+            bound.set(args[i], args[i].bind(_));
+          args[i] = bound.get(args[i]);
+        }
+      }
       return bus.then(port => post(port, id, list, args));
     },
     construct(target, args) {
