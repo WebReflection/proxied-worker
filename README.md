@@ -12,8 +12,6 @@ A tiny utility to asynchronously drive a namespace exposed through a Shared/Serv
 Instances reflected on the client are automatically cleared up on the worker though a dedicated *FinalizationRegistry*.
 
 It is also possible, since `v0.5.0`, to use functions as arguments, although these are stored "*forever*", so use this feature with caution.
-Bear in mind, the context is currently not propagated from the Worker, so if it's strictly needed, bind the listener before passing it as-is.
-
 
 ### Related
 
@@ -53,8 +51,9 @@ nmsp.addEventListener('message', ({data: {action}}) => {
 });
 
 // v0.5.0+ use listenres like features
-nmsp.on('listener', (action, type) => {
+nmsp.on('listener', function (action, type) {
   console.log(action, 'called with type', type);
+  console.log(this === nmsp); // true
 });
 
 // access its properties

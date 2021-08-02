@@ -45,7 +45,9 @@
           console.log(args);
       });
       await nmsp.notify();
-      nmsp.on('event listener', console.log);
+      nmsp.on('event listener', async function (type) {
+        console.log(type, nmsp === this, await this.test);
+      });
     });
   </script>
 </head>
