@@ -2,6 +2,7 @@
 
 const {navigator, ServiceWorker, SharedWorker, Worker} = globalThis;
 const {isArray} = Array;
+const {random} = Math;
 
 const ids = [];
 const cbs = [];
@@ -47,7 +48,7 @@ const post = (
           let index = cbs.indexOf(args[i]);
           if (index < 0) {
             index = cbs.push(args[i]) - 1;
-            ids[index] = `proxied-worker:cb:${uid++ + Math.random()}`;
+            ids[index] = `proxied-worker:cb:${uid++ + random()}`;
           }
           args[i] = ids[index];
           break;

@@ -15,9 +15,9 @@ It is also possible, since `v0.5.0`, to use functions as arguments, although the
 Bear in mind, the context is currently not propagated from the Worker, so if it's strictly needed, bind the listener before passing it as-is.
 
 
-### Related
+### Related + NodeJS
 
-This module is a modern simplification of [workway](https://github.com/WebReflection/workway#readme), heavily inspired, and possibly fueling in the future, [electroff](https://github.com/WebReflection/electroff#readme) too.
+This module is a modern simplification of [workway](https://github.com/WebReflection/workway#readme), heavily inspired by [electroff](https://github.com/WebReflection/electroff#readme), but also **[available for NodeJS too](https://github.com/WebReflection/proxied-node#readme)** as a safer, lighter, and easier alternative.
 
 
 ## Compatibility / Requirements
