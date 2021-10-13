@@ -1,7 +1,8 @@
 /*! (c) Andrea Giammarchi - ISC */
 
-const APPLY = '.apply';
-const NEW = '.new';
+const APPLY = 'apply';
+const GET = 'get';
+const NEW = 'new';
 
 let uid = 0;
 
@@ -22,20 +23,25 @@ globalThis.ProxiedWorker = function ProxiedWorker(Namespace) {
   addEventListener('message', message.bind(globalThis));
 
   async function loopThrough(_, $, list) {
-    for (let i = 0, {length} = list; i < length; i++) {
-      if (list[i].endsWith(NEW)) {
-        const instance = new $[list[i].slice(0, -NEW.length)](
-          ...list[++i].map(args, _)
-        );
-        instances.get(this).set($ = String(uid++), instance);
-      }
-      else if (list[i].endsWith(APPLY))
-        $ = await $[list[i].slice(0, -APPLY.length)](
-          ...list[++i].map(args, _)
-        );
-      else
-        $ = await $[list[i]];
+    const action = list.shift();
+    let {length} = list;
+
+    if (action !== GET)
+      length--;
+    if (action === APPLY)
+      length--;
+
+    for (let i = 0; i < length; i++)
+      $ = await $[list[i]];
+
+    if (action === NEW) {
+      const instance = new $(...list.pop().map(args, _));
+      instances.get(this).set($ = String(uid++), instance);
     }
+    else if (action === APPLY) {
+      $ = await $[list[length]](...list.pop().map(args, _));
+    }
+
     return $;
   }
 
