@@ -1,4 +1,4 @@
-# proxied-worker
+# proxied-worker DEPRECATED - See [coincident](https://github.com/WebReflection/coincident#coincidentserver)
 
 <sup>**Social Media Photo by [Ricardo Gomez Angel](https://unsplash.com/@ripato) on [Unsplash](https://unsplash.com/)**</sup>
 
